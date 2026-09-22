@@ -1,1 +1,29 @@
-<p>age-map deployment test</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Age map</title>
+  <link href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    html, body { margin: 0; height: 100%; }
+    #map { position: absolute; inset: 0; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+  <script>
+    const API_KEY = "644944861917c4ea";
+
+    const map = new maplibregl.Map({
+      container: "map",
+      style: `https://api.protomaps.com/styles/v5/light/en.json?key=${API_KEY}`,
+      center: [73.3686, 54.9893],
+      zoom: 11,
+    });
+
+    map.addControl(new maplibregl.NavigationControl());
+  </script>
+</body>
+</html>
