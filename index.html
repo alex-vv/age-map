@@ -15,15 +15,43 @@
   <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
   <script>
     const API_KEY = "644944861917c4ea";
+    const styleUrl = `https://api.protomaps.com/styles/v5/light/ru.json?key=${API_KEY}`;
+    const REMOVE = ["buildings", "address_label", "pois"];
+    const tilesUrl = new URL("tiles/", document.baseURI).href + "{z}/{x}/{y}.pbf";
 
-    const map = new maplibregl.Map({
-      container: "map",
-      style: `https://api.protomaps.com/styles/v5/light/en.json?key=${API_KEY}`,
-      center: [73.3686, 54.9893],
-      zoom: 11,
-    });
+    fetch(styleUrl)
+      .then((res) => res.json())
+      .then((style) => {
+        style.layers = style.layers.filter((l) => !REMOVE.includes(l.id));
 
-    map.addControl(new maplibregl.NavigationControl());
+        style.sources["omsk"] = {
+          type: "vector",
+          tiles: [tilesUrl],
+          minzoom: 12,
+          maxzoom: 15,
+        };
+
+        style.layers.push({
+          id: "omsk-buildings",
+          type: "fill",
+          source: "omsk",
+          "source-layer": "omsk",
+          paint: {
+            "fill-color": "#8a8a8a",
+            "fill-opacity": 0.6,
+            "fill-outline-color": "#4d4d4d",
+          },
+        });
+
+        const map = new maplibregl.Map({
+          container: "map",
+          style,
+          center: [73.3686, 54.9893],
+          zoom: 13,
+        });
+
+        map.addControl(new maplibregl.NavigationControl());
+      });
   </script>
 </body>
 </html>
