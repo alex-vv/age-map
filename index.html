@@ -199,6 +199,7 @@
           style,
           center: [73.3686, 54.9893],
           zoom: 13,
+          doubleClickZoom: false,
         });
 
         map.addControl(new maplibregl.NavigationControl());
@@ -300,7 +301,8 @@
               ["Этажность", props.r_floors],
               ["Информация", props.r_name],
             ].filter(
-              ([, value]) => value !== undefined && value !== null && value !== ""
+              ([, value]) =>
+                value !== undefined && value !== null && value !== "" && value !== 0
             );
 
             const title = props.r_adress || props.r_name || "Здание";
