@@ -8,16 +8,47 @@
   <style>
     html, body { margin: 0; height: 100%; }
     #map { position: absolute; inset: 0; }
+    .legend {
+      position: absolute;
+      left: 10px;
+      bottom: 10px;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 8px 10px;
+      border-radius: 4px;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+      font: 12px/1.5 system-ui, sans-serif;
+      color: #333;
+    }
+    .legend h4 { margin: 0 0 6px; font-size: 12px; font-weight: 600; }
+    .legend .row { display: flex; align-items: center; gap: 6px; }
+    .legend .sw { width: 14px; height: 12px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); }
   </style>
 </head>
 <body>
   <div id="map"></div>
+  <div id="legend" class="legend"></div>
   <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
   <script>
     const API_KEY = "644944861917c4ea";
     const styleUrl = `https://api.protomaps.com/styles/v5/light/ru.json?key=${API_KEY}`;
     const REMOVE = ["buildings", "address_label", "pois"];
     const tilesUrl = new URL("tiles/", document.baseURI).href + "{z}/{x}/{y}.pbf";
+
+    const NO_DATA = "#bdbdbd";
+    const YEAR_RAMP = [
+      { label: "до 1900", color: "#a50026" },
+      { label: "1900–1919", color: "#d73027", from: 1900 },
+      { label: "1920–1939", color: "#f46d43", from: 1920 },
+      { label: "1940–1959", color: "#fdae61", from: 1940 },
+      { label: "1960–1979", color: "#fee090", from: 1960 },
+      { label: "1980–1999", color: "#e0f3f8", from: 1980 },
+      { label: "2000–2019", color: "#abd9e9", from: 2000 },
+      { label: "2020+", color: "#4575b4", from: 2020 },
+    ];
+
+    const yearStep = ["step", ["get", "r_year_int"], YEAR_RAMP[0].color];
+    for (const { color, from } of YEAR_RAMP.slice(1)) yearStep.push(from, color);
 
     fetch(styleUrl)
       .then((res) => res.json())
@@ -37,9 +68,13 @@
           source: "omsk",
           "source-layer": "omsk",
           paint: {
-            "fill-color": "#8a8a8a",
-            "fill-opacity": 0.6,
-            "fill-outline-color": "#4d4d4d",
+            "fill-color": [
+              "case",
+              ["has", "r_year_int"],
+              yearStep,
+              NO_DATA,
+            ],
+            "fill-opacity": 0.85,
           },
         });
 
@@ -51,6 +86,14 @@
         });
 
         map.addControl(new maplibregl.NavigationControl());
+
+        document.getElementById("legend").innerHTML =
+          "<h4>Год постройки</h4>" +
+          YEAR_RAMP.map(
+            ({ label, color }) =>
+              `<div class="row"><span class="sw" style="background:${color}"></span>${label}</div>`
+          ).join("") +
+          `<div class="row"><span class="sw" style="background:${NO_DATA}"></span>нет данных</div>`;
       });
   </script>
 </body>
