@@ -16,7 +16,7 @@
       background: rgba(255, 255, 255, 0.9);
       padding: 8px 10px;
       border-radius: 4px;
-      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
       font: 12px/1.5 system-ui, sans-serif;
       color: #333;
     }
@@ -111,6 +111,16 @@
       cursor: pointer;
     }
     .range-labels { display: flex; justify-content: space-between; margin-top: 4px; }
+
+    .maplibregl-popup-content {
+      font: 12px/1.5 system-ui, sans-serif;
+      color: #333;
+      padding: 10px 12px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    }
+    .popup-title { margin: 0 0 6px; font-size: 13px; font-weight: 600; }
+    .popup-row { margin: 2px 0; }
+    .popup-key { color: #777; }
   </style>
 </head>
 <body>
@@ -150,6 +160,12 @@
     const yearStep = ["step", ["get", "r_year_int"], YEAR_RAMP[0].color];
     for (const { color, from } of YEAR_RAMP.slice(1)) yearStep.push(from, color);
 
+    const escapeHtml = (value) =>
+      String(value).replace(
+        /[&<>"']/g,
+        (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]
+      );
+
     fetch(styleUrl)
       .then((res) => res.json())
       .then((style) => {
@@ -163,7 +179,7 @@
         };
 
         style.layers.push({
-          id: "omsk-buildings",
+          id: "buildings",
           type: "fill",
           source: "omsk",
           "source-layer": "omsk",
@@ -218,9 +234,10 @@
         ];
 
         const apply = () => {
+          if (!map.isStyleLoaded()) return;
           const noData = ["!", ["has", "r_year_int"]];
           map.setFilter(
-            "omsk-buildings",
+            "buildings",
             noDataVisible ? ["any", yearInRange(), noData] : yearInRange()
           );
         };
@@ -270,8 +287,43 @@
           apply();
         });
 
-        updateRangeVisual();
-        apply();
+        map.on("load", () => {
+          updateRangeVisual();
+          apply();
+
+          const popup = new maplibregl.Popup({ maxWidth: "320px" });
+
+          map.on("click", "buildings", (event) => {
+            const props = event.features[0].properties;
+            const fields = [
+              ["Год постройки", props.r_year_int],
+              ["Этажность", props.r_floors],
+              ["Информация", props.r_name],
+            ].filter(
+              ([, value]) => value !== undefined && value !== null && value !== ""
+            );
+
+            const title = props.r_adress || props.r_name || "Здание";
+            const body = fields
+              .map(
+                ([key, value]) =>
+                  `<div class="popup-row"><span class="popup-key">${key}:</span> ${escapeHtml(value)}</div>`
+              )
+              .join("");
+
+            popup
+              .setLngLat(event.lngLat)
+              .setHTML(`<h4 class="popup-title">${escapeHtml(title)}</h4>${body}`)
+              .addTo(map);
+          });
+
+          map.on("mouseenter", "buildings", () => {
+            map.getCanvas().style.cursor = "pointer";
+          });
+          map.on("mouseleave", "buildings", () => {
+            map.getCanvas().style.cursor = "";
+          });
+        });
       });
   </script>
 </body>
