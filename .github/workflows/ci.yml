@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,5 +19,5 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Run tests
-        run: ./mvnw -B test
+      - name: Build
+        run: ./mvnw -B package
