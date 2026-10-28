@@ -2,3 +2,4 @@
 data
 .quarkus
 target
+node_modules

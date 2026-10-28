@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Age map</title>
+  <link href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+  {#bundle /}
+  <script
+    data-goatcounter="https://stats.age-map.ru/count"
+    async
+    src="https://stats.age-map.ru/count.js"
+  ></script>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="legend" class="legend"></div>
+  <div id="range" class="range">
+    <div class="range-slider">
+      <div class="range-track"></div>
+      <div id="range-fill" class="range-fill"></div>
+      <input id="year-lo" type="range" min="1771" max="2026" step="1" value="1771" />
+      <input id="year-hi" type="range" min="1771" max="2026" step="1" value="2026" />
+    </div>
+    <div class="range-labels">
+      <span id="label-lo">1771</span>
+      <span id="label-hi">2026</span>
+    </div>
+  </div>
+</body>
+</html>
