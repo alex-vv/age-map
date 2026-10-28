@@ -68,6 +68,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const labelLo = document.getElementById("label-lo");
       const labelHi = document.getElementById("label-hi");
 
+      const FLOOR_MIN = 0;
+      const FLOOR_MAX = 23;
+      const floorLoInput = document.getElementById("floor-lo");
+      const floorHiInput = document.getElementById("floor-hi");
+      const floorFill = document.getElementById("floor-fill");
+      const floorLabelLo = document.getElementById("floor-label-lo");
+      const floorLabelHi = document.getElementById("floor-label-hi");
+
       let noDataVisible = true;
 
       const legend = document.getElementById("legend");
@@ -90,13 +98,18 @@ document.addEventListener("DOMContentLoaded", () => {
         false,
       ];
 
+      const floorGet = ["coalesce", ["get", "r_floors"], 0];
+      const floorInRange = () => [
+        "all",
+        [">=", floorGet, Number(floorLoInput.value)],
+        ["<=", floorGet, Number(floorHiInput.value)],
+      ];
+
       const apply = () => {
         if (!map.isStyleLoaded()) return;
-        const noData = ["!", ["has", "r_year_int"]];
-        map.setFilter(
-          "buildings",
-          noDataVisible ? ["any", yearInRange(), noData] : yearInRange()
-        );
+        const noYear = ["!", ["has", "r_year_int"]];
+        const yearPart = noDataVisible ? ["any", yearInRange(), noYear] : yearInRange();
+        map.setFilter("buildings", ["all", yearPart, floorInRange()]);
       };
 
       const updateRangeVisual = () => {
@@ -107,6 +120,16 @@ document.addEventListener("DOMContentLoaded", () => {
         rangeFill.style.width = ((hi - lo) / span) * 100 + "%";
         labelLo.textContent = lo;
         labelHi.textContent = hi;
+      };
+
+      const updateFloorVisual = () => {
+        const lo = Number(floorLoInput.value);
+        const hi = Number(floorHiInput.value);
+        const span = FLOOR_MAX - FLOOR_MIN;
+        floorFill.style.left = ((lo - FLOOR_MIN) / span) * 100 + "%";
+        floorFill.style.width = ((hi - lo) / span) * 100 + "%";
+        floorLabelLo.textContent = lo;
+        floorLabelHi.textContent = hi;
       };
 
       loInput.addEventListener("input", () => {
@@ -122,6 +145,22 @@ document.addEventListener("DOMContentLoaded", () => {
           hiInput.value = loInput.value;
         }
         updateRangeVisual();
+        apply();
+      });
+
+      floorLoInput.addEventListener("input", () => {
+        if (Number(floorLoInput.value) > Number(floorHiInput.value)) {
+          floorLoInput.value = floorHiInput.value;
+        }
+        updateFloorVisual();
+        apply();
+      });
+
+      floorHiInput.addEventListener("input", () => {
+        if (Number(floorHiInput.value) < Number(floorLoInput.value)) {
+          floorHiInput.value = floorLoInput.value;
+        }
+        updateFloorVisual();
         apply();
       });
 
@@ -146,6 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       map.on("load", () => {
         updateRangeVisual();
+        updateFloorVisual();
         apply();
 
         const popup = new maplibregl.Popup({ maxWidth: "320px" });

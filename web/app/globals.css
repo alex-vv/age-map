@@ -25,13 +25,22 @@ html, body { margin: 0; height: 100%; }
 .legend .row.active { background: rgba(0, 0, 0, 0.10); color: #888; }
 .legend .row.active .sw { opacity: 0.35; }
 
-.range {
+.controls {
   position: absolute;
   left: 50%;
   bottom: 16px;
   transform: translateX(-50%);
-  width: min(520px, calc(100% - 40px));
+  width: max-content;
+  max-width: calc(100% - 40px);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
   z-index: 1;
+}
+.range {
+  width: min(340px, calc(100vw - 40px));
   background: rgba(255, 255, 255, 0.9);
   padding: 8px 16px 10px;
   border-radius: 4px;
@@ -39,6 +48,7 @@ html, body { margin: 0; height: 100%; }
   font: 12px/1.5 system-ui, sans-serif;
   color: #333;
 }
+.range-title { margin-bottom: 6px; font-size: 12px; font-weight: 600; }
 .range-slider { position: relative; height: 20px; }
 .range-track {
   position: absolute;
